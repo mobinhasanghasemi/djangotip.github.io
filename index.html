@@ -1,0 +1,2274 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django Optimization Bible - از مبتدی تا حرفه‌ای</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+  --bg-primary: #0a0e17;
+  --bg-secondary: #111827;
+  --bg-card: #1a2332;
+  --bg-code: #0d1117;
+  --accent-green: #00e676;
+  --accent-red: #ff5252;
+  --accent-blue: #448aff;
+  --accent-purple: #b388ff;
+  --accent-orange: #ffab40;
+  --accent-cyan: #18ffff;
+  --accent-yellow: #ffd740;
+  --text-primary: #e8eaed;
+  --text-secondary: #9aa0a6;
+  --text-dim: #5f6368;
+  --border: #2a3441;
+  --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-2: linear-gradient(135deg, #00e676 0%, #00bcd4 100%);
+  --gradient-3: linear-gradient(135deg, #ff5252 0%, #ff9800 100%);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Vazirmatn', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.8;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-blue); }
+
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 50%, rgba(102,126,234,0.15) 0%, transparent 70%);
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(0,230,118,0.08) 0%, transparent 70%);
+  top: -200px; right: -200px;
+  animation: float 8s ease-in-out infinite;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(179,136,255,0.08) 0%, transparent 70%);
+  bottom: -100px; left: -100px;
+  animation: float 6s ease-in-out infinite reverse;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-30px) rotate(5deg); }
+}
+
+.hero-content { position: relative; z-index: 2; }
+
+.hero h1 {
+  font-size: 4rem;
+  font-weight: 900;
+  background: var(--gradient-2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1rem;
+}
+
+.hero .subtitle {
+  font-size: 1.4rem;
+  color: var(--text-secondary);
+  font-weight: 300;
+  margin-bottom: 2rem;
+}
+
+.hero .badge-row {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.badge {
+  padding: 0.5rem 1.5rem;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(10px);
+}
+
+.badge.green { border-color: rgba(0,230,118,0.4); color: var(--accent-green); }
+.badge.blue { border-color: rgba(68,138,255,0.4); color: var(--accent-blue); }
+.badge.purple { border-color: rgba(179,136,255,0.4); color: var(--accent-purple); }
+.badge.orange { border-color: rgba(255,171,64,0.4); color: var(--accent-orange); }
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+nav.toc {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(10,14,23,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 0;
+}
+
+.toc-inner {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0 2rem;
+  scrollbar-width: none;
+}
+
+.toc-inner::-webkit-scrollbar { display: none; }
+
+.toc a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.4rem 1rem;
+  border-radius: 50px;
+  white-space: nowrap;
+  transition: all 0.3s;
+  border: 1px solid transparent;
+}
+
+.toc a:hover {
+  color: var(--accent-green);
+  border-color: rgba(0,230,118,0.3);
+  background: rgba(0,230,118,0.05);
+}
+
+section { padding: 5rem 0; }
+
+.section-header {
+  margin-bottom: 3rem;
+}
+
+.section-number {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent-blue);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.section-desc {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  max-width: 700px;
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+
+.card:hover { border-color: rgba(0,230,118,0.3); }
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 100%; height: 3px;
+  background: var(--gradient-2);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.card:hover::before { opacity: 1; }
+
+.card-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.card-title .icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.icon.green { background: rgba(0,230,118,0.1); color: var(--accent-green); }
+.icon.red { background: rgba(255,82,82,0.1); color: var(--accent-red); }
+.icon.blue { background: rgba(68,138,255,0.1); color: var(--accent-blue); }
+.icon.purple { background: rgba(179,136,255,0.1); color: var(--accent-purple); }
+.icon.orange { background: rgba(255,171,64,0.1); color: var(--accent-orange); }
+.icon.cyan { background: rgba(24,255,255,0.1); color: var(--accent-cyan); }
+
+.code-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .code-compare { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 2.5rem; }
+  .section-title { font-size: 1.8rem; }
+}
+
+.code-block {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.code-label {
+  padding: 0.6rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.code-label.bad {
+  background: rgba(255,82,82,0.15);
+  color: var(--accent-red);
+  border-bottom: 1px solid rgba(255,82,82,0.2);
+}
+
+.code-label.good {
+  background: rgba(0,230,118,0.15);
+  color: var(--accent-green);
+  border-bottom: 1px solid rgba(0,230,118,0.2);
+}
+
+.code-label.info {
+  background: rgba(68,138,255,0.15);
+  color: var(--accent-blue);
+  border-bottom: 1px solid rgba(68,138,255,0.2);
+}
+
+pre {
+  background: var(--bg-code);
+  padding: 1.2rem;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  line-height: 1.7;
+  direction: ltr;
+  text-align: left;
+}
+
+pre code { color: var(--text-primary); }
+
+.kw { color: #ff79c6; }
+.str { color: #f1fa8c; }
+.fn { color: #50fa7b; }
+.cm { color: #6272a4; }
+.num { color: #bd93f9; }
+.op { color: #ff79c6; }
+.var { color: #8be9fd; }
+.dec { color: #ffb86c; }
+.cls { color: #8be9fd; }
+
+.perf-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-top: 1rem;
+}
+
+.perf-badge.fast {
+  background: rgba(0,230,118,0.1);
+  color: var(--accent-green);
+  border: 1px solid rgba(0,230,118,0.3);
+}
+
+.perf-badge.slow {
+  background: rgba(255,82,82,0.1);
+  color: var(--accent-red);
+  border: 1px solid rgba(255,82,82,0.3);
+}
+
+.tip-box {
+  background: rgba(68,138,255,0.08);
+  border: 1px solid rgba(68,138,255,0.2);
+  border-radius: 12px;
+  padding: 1.2rem 1.5rem;
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--accent-blue);
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.tip-box .tip-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
+
+.warn-box {
+  background: rgba(255,171,64,0.08);
+  border: 1px solid rgba(255,171,64,0.2);
+  border-radius: 12px;
+  padding: 1.2rem 1.5rem;
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--accent-orange);
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.warn-box .tip-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.metric-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.metric-value {
+  font-size: 2rem;
+  font-weight: 900;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.metric-value.up { color: var(--accent-green); }
+.metric-value.down { color: var(--accent-red); }
+
+.metric-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 0.3rem;
+}
+
+.divider {
+  height: 1px;
+  background: linear-gradient(to left, transparent, var(--border), transparent);
+  margin: 4rem 0;
+}
+
+.level-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 1rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.level-indicator.beginner {
+  background: rgba(0,230,118,0.1);
+  color: var(--accent-green);
+  border: 1px solid rgba(0,230,118,0.3);
+}
+
+.level-indicator.intermediate {
+  background: rgba(255,171,64,0.1);
+  color: var(--accent-orange);
+  border: 1px solid rgba(255,171,64,0.3);
+}
+
+.level-indicator.advanced {
+  background: rgba(255,82,82,0.1);
+  color: var(--accent-red);
+  border: 1px solid rgba(255,82,82,0.3);
+}
+
+.level-indicator.expert {
+  background: rgba(179,136,255,0.1);
+  color: var(--accent-purple);
+  border: 1px solid rgba(179,136,255,0.3);
+}
+
+ul.check-list {
+  list-style: none;
+  padding: 0;
+}
+
+ul.check-list li {
+  padding: 0.5rem 0;
+  padding-right: 1.8rem;
+  position: relative;
+  color: var(--text-secondary);
+}
+
+ul.check-list li::before {
+  content: '✓';
+  position: absolute;
+  right: 0;
+  color: var(--accent-green);
+  font-weight: 700;
+}
+
+footer {
+  text-align: center;
+  padding: 3rem 0;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  border-top: 1px solid var(--border);
+}
+
+.tag {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.tag.sql { background: rgba(68,138,255,0.15); color: var(--accent-blue); }
+.tag.cache { background: rgba(179,136,255,0.15); color: var(--accent-purple); }
+.tag.async { background: rgba(0,230,118,0.15); color: var(--accent-green); }
+.tag.db { background: rgba(255,171,64,0.15); color: var(--accent-orange); }
+
+.explanation {
+  margin-top: 1rem;
+  padding: 1rem 1.5rem;
+  background: rgba(255,255,255,0.02);
+  border-radius: 10px;
+  border-right: 3px solid var(--accent-blue);
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.explanation strong { color: var(--text-primary); }
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .two-col { grid-template-columns: 1fr; }
+}
+
+footer .heart { color: var(--accent-red); }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <h1>Django Optimization Bible</h1>
+    <p class="subtitle">کتاب مقدس بهینه‌سازی جنگو — از سطح یک تا حرفه‌ای</p>
+    <div class="badge-row">
+      <span class="badge green">⚡ Performance</span>
+      <span class="badge blue">🗄️ Database</span>
+      <span class="badge purple">🧠 Caching</span>
+      <span class="badge orange">🔧 Advanced</span>
+    </div>
+  </div>
+</section>
+
+<!-- TOC -->
+<nav class="toc">
+  <div class="toc-inner">
+    <a href="#sec1">۱. QuerySet تنبل</a>
+    <a href="#sec2">۲. select_related</a>
+    <a href="#sec3">۳. prefetch_related</a>
+    <a href="#sec4">۴. only / defer</a>
+    <a href="#sec5">۵. annotate / aggregate</a>
+    <a href="#sec6">۶. Index‌ها</a>
+    <a href="#sec7">۷. Raw SQL</a>
+    <a href="#sec8">۸. Caching</a>
+    <a href="#sec9">۹. Async Views</a>
+    <a href="#sec10">۱۰. Database Tuning</a>
+    <a href="#sec11">۱۱. Connection Pool</a>
+    <a href="#sec12">۱۲. Bulk Operations</a>
+    <a href="#sec13">۱۳. Signals</a>
+    <a href="#sec14">۱۴. Serializer</a>
+    <a href="#sec15">۱۵. Middleware</a>
+    <a href="#sec16">۱۶. Celery</a>
+    <a href="#sec17">۱۷. Monitoring</a>
+    <a href="#sec18">۱۸. Security</a>
+  </div>
+</nav>
+
+<div class="container">
+
+<!-- ============================================================ -->
+<!-- SECTION 1: Lazy QuerySet -->
+<!-- ============================================================ -->
+<section id="sec1">
+  <div class="section-header">
+    <span class="level-indicator beginner">🟢 سطح مبتدی</span>
+    <div class="section-number">بخش ۰۱</div>
+    <h2 class="section-title">Lazy Evaluation در QuerySet</h2>
+    <p class="section-desc">جنگو تا زمانی که واقعاً به داده نیاز نداشته باشی، کوئری نمی‌زنه. این اولین و مهم‌ترین اصل بهینه‌سازیه.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon green">⚡</span>
+      درک مفهوم Lazy بودن
+    </div>
+    <p style="color:var(--text-secondary);margin-bottom:1rem;">QuerySet‌های جنگو تنبل هستن — تا زمان evaluation کوئری به دیتابیس ارسال نمیشه.</p>
+
+    <div class="code-compare">
+      <div class="code-block">
+        <div class="code-label bad">✗ کوئری اضافی — بدون استفاده</div>
+        <pre><code><span class="cm"># این خط هیچ کوئری‌ای به DB نمی‌زنه!</span>
+qs = <span class="cls">User</span>.objects.<span class="fn">filter</span>(is_active=<span class="num">True</span>)
+
+<span class="cm"># ولی این خط کوئری می‌زنه چون evaluation شده</span>
+<span class="fn">list</span>(qs)  <span class="cm"># SELECT * FROM user WHERE is_active</span>
+
+<span class="cm"># ❌ اشتباه رایج: تبدیل به list قبل از نیاز</span>
+users = <span class="fn">list</span>(<span class="cls">User</span>.objects.<span class="fn">all</span>())
+<span class="kw">for</span> u <span class="kw">in</span> users:
+    <span class="kw">if</span> u.age > <span class="num">18</span>:
+        <span class="fn">print</span>(u.name)</code></pre>
+        <div class="perf-badge slow">🐌 بارگذاری کل جدول در حافظه</div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-label good">✓ فیلتر در سطح دیتابیس</div>
+        <pre><code><span class="cm"># ✓ بهینه: فیلتر در DB انجام میشه</span>
+users = <span class="cls">User</span>.objects.<span class="fn">filter</span>(
+    is_active=<span class="num">True</span>,
+    age__gt=<span class="num">18</span>
+)
+
+<span class="cm"># فقط وقتی iteration بشه کوئری اجرا میشه</span>
+<span class="kw">for</span> u <span class="kw">in</span> users:
+    <span class="fn">print</span>(u.name)
+
+<span class="cm"># SELECT * FROM user</span>
+<span class="cm"># WHERE is_active=1 AND age &gt; 18</span></code></pre>
+        <div class="perf-badge fast">⚡ فیلتر در سمت DB</div>
+      </div>
+    </div>
+
+    <div class="explanation">
+      <strong>نکته کلیدی:</strong> هیچوقت QuerySet رو بدون نیاز به <code>list()</code> تبدیل نکن. بذار جنگو خودش تصمیم بگیره کی کوئری بزنه. chaining فیلترها هم هزینه‌ای نداره چون هنوز evaluation نشده.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon red">⚠️</span>
+      تله‌های رایج QuerySet
+    </div>
+    <div class="code-compare">
+      <div class="code-block">
+        <div class="code-label bad">✗ ارزیابی چندباره</div>
+        <pre><code><span class="cm"># ❌ هر بار یه کوئری جدید!</span>
+<span class="kw">if</span> <span class="cls">User</span>.objects.<span class="fn">filter</span>(active=<span class="num">True</span>).<span class="fn">exists</span>():
+    users = <span class="cls">User</span>.objects.<span class="fn">filter</span>(active=<span class="num">True</span>)
+    <span class="kw">for</span> u <span class="kw">in</span> users:
+        <span class="fn">process</span>(u)
+
+<span class="cm"># ۳ کوئری جداگانه اجرا میشه!</span></code></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-label good">✓ کش کردن خودکار QuerySet</div>
+        <pre><code><span class="cm"># ✓ کوئری فقط یکبار اجرا میشه</span>
+users = <span class="cls">User</span>.objects.<span class="fn">filter</span>(active=<span class="num">True</span>)
+
+<span class="kw">if</span> users:
+    <span class="kw">for</span> u <span class="kw">in</span> users:
+        <span class="fn">process</span>(u)
+
+<span class="cm"># یا explicit cache:</span>
+users = <span class="fn">list</span>(<span class="cls">User</span>.objects.<span class="fn">filter</span>(...))</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<!-- SECTION 2: select_related -->
+<!-- ============================================================ -->
+<section id="sec2">
+  <div class="section-header">
+    <span class="level-indicator beginner">🟢 سطح مبتدی</span>
+    <div class="section-number">بخش ۰۲</div>
+    <h2 class="section-title">select_related — حل N+1</h2>
+    <p class="section-desc">معروف‌ترین مشکل性能ی جنگو: N+1 Query Problem. با select_related با یه JOIN حلش کن.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon red">🔥</span>
+      مشکل N+1 — بدترین دشمن性能
+    </div>
+
+    <div class="code-compare">
+      <div class="code-block">
+        <div class="code-label bad">✗ مشکل N+1 — ۱۰۱ کوئری!</div>
+        <pre><code><span class="cm"># مدل‌ها</span>
+<span class="kw">class</span> <span class="cls">Author</span>(models.Model):
+    name = models.<span class="fn">CharField</span>(max_length=<span class="num">100</span>)
+
+<span class="kw">class</span> <span class="cls">Book</span>(models.Model):
+    title = models.<span class="fn">CharField</span>(max_length=<span class="num">200</span>)
+    author = models.<span class="fn">ForeignKey</span>(Author, ...)
+
+<span class="cm"># ❌ ویو — N+1 problem</span>
+books = <span class="cls">Book</span>.objects.<span class="fn">all</span>()[:<span class="num">100</span>]
+<span class="kw">for</span> book <span class="kw">in</span> books:
+    <span class="fn">print</span>(book.author.name)
+    <span class="cm"># هر iteration = 1 کوئری اضافه!</span>
+    <span class="cm"># 1 + 100 = 101 کوئری</span></code></pre>
+        <div class="perf-badge slow">🐌 101 کوئری به دیتابیس</div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-label good">✓ select_related — فقط ۱ کوئری</div>
+        <pre><code><span class="cm"># ✓ با JOIN — فقط ۱ کوئری</span>
+books = <span class="cls">Book</span>.objects.<span class="fn">select_related</span>(
+    <span class="str">'author'</span>
+).<span class="fn">all</span>()[:<span class="num">100</span>]
+
+<span class="kw">for</span> book <span class="kw">in</span> books:
+    <span class="fn">print</span>(book.author.name)
+    <span class="cm"># بدون کوئری اضافه!</span>
+
+<span class="cm"># SQL:</span>
+<span class="cm"># SELECT book.*, author.*</span>
+<span class="cm"># FROM book</span>
+<span class="cm"># INNER JOIN author</span>
+<span class="cm">#   ON book.author_id = author.id</span>
+<span class="cm"># LIMIT 100</span></code></pre>
+        <div class="perf-badge fast">⚡ 1 کوئری با JOIN</div>
+      </div>
+    </div>
+
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="metric-value down">101</div>
+        <div class="metric-label">کوئری بدون بهینه‌سازی</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value up">1</div>
+        <div class="metric-label">کوئری با select_related</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value up">99%</div>
+        <div class="metric-label">کاهش تعداد کوئری</div>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <span class="tip-icon">💡</span>
+      <span><strong>کی استفاده کنیم:</strong> select_related برای ForeignKey و OneToOneField کار می‌کنه. از LEFT OUTER JOIN استفاده می‌کنه. برای روابط ManyToMany کار نمی‌کنه — اونجا باید از prefetch_related استفاده کنی.</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon blue">🔗</span>
+      زنجیره‌ای کردن select_related
+    </div>
+    <pre><code><span class="cm"># روابط عمیق رو هم میشه زنجیره کرد</span>
+order = <span class="cls">Order</span>.objects.<span class="fn">select_related</span>(
+    <span class="str">'customer'</span>,              <span class="cm"># FK</span>
+    <span class="str">'customer__address'</span>,     <span class="cm"># FK → FK</span>
+    <span class="str">'product__category'</span>,     <span class="cm"># FK → FK</span>
+).<span class="fn">get</span>(id=<span class="num">1</span>)
+
+<span class="cm"># یک کوئری با چند JOIN</span>
+<span class="cm"># SELECT order.*, customer.*, address.*,</span>
+<span class="cm">#        product.*, category.*</span>
+<span class="cm"># FROM order</span>
+<span class="cm"># INNER JOIN customer ON ...</span>
+<span class="cm"># LEFT JOIN address ON ...</span>
+<span class="cm"># INNER JOIN product ON ...</span>
+<span class="cm"># LEFT JOIN category ON ...</span></code></pre>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<!-- SECTION 3: prefetch_related -->
+<!-- ============================================================ -->
+<section id="sec3">
+  <div class="section-header">
+    <span class="level-indicator intermediate">🟡 سطح متوسط</span>
+    <div class="section-number">بخش ۰۳</div>
+    <h2 class="section-title">prefetch_related — روابط Many</h2>
+    <p class="section-desc">برای ManyToMany و reverse ForeignKey. دو کوئری جدا ولی بهینه.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon purple">🔄</span>
+      prefetch_related برای M2M
+    </div>
+
+    <div class="code-compare">
+      <div class="code-block">
+        <div class="code-label bad">✗ بدون prefetch — N+1</div>
+        <pre><code><span class="kw">class</span> <span class="cls">Article</span>(models.Model):
+    tags = models.<span class="fn">ManyToManyField</span>(<span class="str">'Tag'</span>)
+    title = models.<span class="fn">CharField</span>()
+
+<span class="cm"># ❌ هر مقاله یه کوئری برای تگ‌ها</span>
+articles = <span class="cls">Article</span>.objects.<span class="fn">all</span>()
+<span class="kw">for</span> a <span class="kw">in</span> articles:
+    <span class="fn">print</span>(a.tags.<span class="fn">all</span>())
+    <span class="cm"># N+1 problem</span></code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-label good">✓ با prefetch — فقط ۲ کوئری</div>
+        <pre><code><span class="cm"># ✓ فقط ۲ کوئری اجرا میشه</span>
+articles = <span class="cls">Article</span>.objects.<span class="fn">prefetch_related</span>(
+    <span class="str">'tags'</span>
+).<span class="fn">all</span>()
+
+<span class="kw">for</span> a <span class="kw">in</span> articles:
+    <span class="fn">print</span>(a.tags.<span class="fn">all</span>())
+    <span class="cm"># از کش داخلی استفاده میشه</span>
+
+<span class="cm"># کوئری ۱: SELECT * FROM article</span>
+<span class="cm"># کوئری ۲: SELECT * FROM tag</span>
+<span class="cm">#          INNER JOIN article_tags</span>
+<span class="cm">#          WHERE article_id IN (...)</span></code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon orange">🎯</span>
+      Prefetch پیشرفته با Prefetch Object
+    </div>
+    <pre><code><span class="kw">from</span> django.db.models <span class="kw">import</span> Prefetch
+
+<span class="cm"># فیلتر کردن پری‌فچ — فقط تگ‌های فعال</span>
+articles = <span class="cls">Article</span>.objects.<span class="fn">prefetch_related</span>(
+    <span class="fn">Prefetch</span>(
+        <span class="str">'tags'</span>,
+        queryset=<span class="cls">Tag</span>.objects.<span class="fn">filter</span>(is_active=<span class="num">True</span>),
+        to_attr=<span class="str">'active_tags'</span>  <span class="cm"># ذخیره در attribute سفارشی</span>
+    )
+)
+
+<span class="kw">for</span> a <span class="kw">in</span> articles:
+    <span class="fn">print</span>(a.active_tags)  <span class="cm"># لیست آماده، بدون کوئری اضافه</span>
+
+<span class="cm"># ترکیب select_related + prefetch_related</span>
+orders = <span class="cls">Order</span>.objects.<span class="fn">select_related</span>(
+    <span class="str">'customer'</span>          <span class="cm"># FK → JOIN</span>
+).<span class="fn">prefetch_related</span>(
+    <span class="str">'items'</span>,             <span class="cm"># M2M → separate query</span>
+    <span class="str">'items__product'</span>     <span class="cm"># M2M → FK → separate query</span>
+)</code></pre>
+
+    <div class="tip-box">
+      <span class="tip-icon">💡</span>
+      <span><strong>select_related vs prefetch_related:</strong> select_related = JOIN (یک کوئری) برای FK/OneToOne. prefetch_related = کوئری جدا (دو کوئری) برای M2M/reverse FK. در روابط عمیق ترکیب هر دو ایده‌آله.</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<!-- SECTION 4: only / defer -->
+<!-- ============================================================ -->
+<section id="sec4">
+  <div class="section-header">
+    <span class="level-indicator intermediate">🟡 سطح متوسط</span>
+    <div class="section-number">بخش ۰۴</div>
+    <h2 class="section-title">only و defer — بارگذاری انتخابی</h2>
+    <p class="section-desc">وقتی فقط چند فیلد لازم داری، کل ردیف رو بارگذاری نکن.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon cyan">📊</span>
+      only() — فقط فیلدهای مورد نیاز
+    </div>
+
+    <div class="code-compare">
+      <div class="code-block">
+        <div class="code-label bad">✗ بارگذاری همه فیلدها</div>
+        <pre><code><span class="cm"># ❌ SELECT * — تمام فیلدها</span>
+users = <span class="cls">User</span>.objects.<span class="fn">all</span>()
+
+<span class="kw">for</span> u <span class="kw">in</span> users:
+    <span class="fn">print</span>(f<span class="str">"{u.first_name} {u.last_name}"</span>)
+    <span class="cm"># email, avatar, bio, ...</span>
+    <span class="cm"># همه بارگذاری شدن ولی استفاده نشدن</span></code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-label good">✓ فقط فیلدهای لازم</div>
+        <pre><code><span class="cm"># ✓ SELECT id, first_name, last_name</span>
+users = <span class="cls">User</span>.objects.<span class="fn">only</span>(
+    <span class="str">'first_name'</span>,
+    <span class="str">'last_name'</span>
+)
+
+<span class="kw">for</span> u <span class="kw">in</span> users:
+    <span class="fn">print</span>(f<span class="str">"{u.first_name} {u.last_name}"</span>)</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon blue">🧊</span>
+      defer() — حذف فیلدهای سنگین
+    </div>
+    <pre><code><span class="cm"># defer = "این فیلدها رو بعداً بارگذاری کن"</span>
+articles = <span class="cls">Article</span>.objects.<span class="fn">defer</span>(
+    <span class="str">'content'</span>,      <span class="cm"># متن کامل مقاله — سنگین</span>
+    <span class="str">'raw_html'</span>      <span class="cm"># HTML خام — سنگین</span>
+).<span class="fn">all</span>()
+
+<span class="kw">for</span> a <span class="kw">in</span> articles:
+    <span class="fn">print</span>(a.title)     <span class="cm"># ✓ بدون کوئری اضافه</span>
+    <span class="fn">print</span>(a.summary)   <span class="cm"># ✓ بدون کوئری اضافه</span>
+    <span class="fn">print</span>(a.content)   <span class="cm"># ⚠️ کوئری اضافه — lazy load</span>
+
+<span class="cm"># ترکیب با select_related</span>
+posts = <span class="cls">Post</span>.objects.<span class="fn">select_related</span>(
+    <span class="str">'author'</span>
+).<span class="fn">only</span>(
+    <span class="str">'title'</span>,
+    <span class="str">'created_at'</span>,
+    <span class="str">'author__first_name'</span>
+)</code></pre>
+
+    <div class="warn-box">
+      <span class="tip-icon">⚠️</span>
+      <span><strong>احتیاط:</strong> اگه به فیلد deferred دسترسی پیدا کنی، جنگو یه کوئری اضافه می‌زنه. فقط وقتی از defer/only استفاده کن که مطمئنی به اون فیلدها نیاز نداری.</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<!-- SECTION 5: annotate / aggregate -->
+<!-- ============================================================ -->
+<section id="sec5">
+  <div class="section-header">
+    <span class="level-indicator intermediate">🟡 سطح متوسط</span>
+    <div class="section-number">بخش ۰۵</div>
+    <h2 class="section-title">annotate و aggregate — محاسبه در DB</h2>
+    <p class="section-desc">به جای حلقه در پایتون، محاسبات رو به دیتابیس بسپار.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon green">🧮</span>
+      annotate — اضافه کردن فیلد محاسباتی
+    </div>
+
+    <div class="code-compare">
+      <div class="code-block">
+        <div class="code-label bad">✗ محاسبه در Python — N+1 و کند</div>
+        <pre><code><span class="cm"># ❌ شمارش سفارشات در پایتون</span>
+authors = <span class="cls">Author</span>.objects.<span class="fn">all</span>()
+result = []
+<span class="kw">for</span> a <span class="kw">in</span> authors:
+    count = a.books.<span class="fn">count</span>()  <span class="cm"># 1 کوئری</span>
+    result.<span class="fn">append</span>({
+        <span class="str">'name'</span>: a.name,
+        <span class="str">'book_count'</span>: count
+    })
+
+<span class="cm"># N+1 کوئری + حلقه در Python</span></code></pre>
+        <div class="perf-badge slow">🐌 N+1 + CPU Python</div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-label good">✓ annotate در DB — ۱ کوئری</div>
+        <pre><code><span class="kw">from</span> django.db.models <span class="kw">import</span> Count
+
+<span class="cm"># ✓ همه چیز در یک کوئری</span>
+authors = <span class="cls">Author</span>.objects.<span class="fn">annotate</span>(
+    book_count=<span class="fn">Count</span>(<span class="str">'books'</span>)
+).<span class="fn">values</span>(<span class="str">'name'</span>, <span class="str">'book_count'</span>)
+
+<span class="cm"># SQL:</span>
+<span class="cm"># SELECT a.name, COUNT(b.id) as book_count</span>
+<span class="cm"># FROM author a</span>
+<span class="cm"># LEFT JOIN book b ON b.author_id = a.id</span>
+<span class="cm"># GROUP BY a.id, a.name</span></code></pre>
+        <div class="perf-badge fast">⚡ 1 کوئری بهینه</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon purple">📈</span>
+      توابع مفید annotate
+    </div>
+    <pre><code><span class="kw">from</span> django.db.models <span class="kw">import</span> (
+    Count, Sum, Avg, Max, Min, F, Q, Value,
+    Case, When, CharField
+)
+<span class="kw">from</span> django.db.models.functions <span class="kw">import</span> (
+    Concat, Lower, Upper, Coalesce, Now
+)
+
+<span class="cm"># مثال‌های کاربردی</span>
+products = <span class="cls">Product</span>.objects.<span class="fn">annotate</span>(
+    <span class="cm"># شمارش</span>
+    review_count=<span class="fn">Count</span>(<span class="str">'reviews'</span>),
+    <span class="cm"># میانگین</span>
+    avg_rating=<span class="fn">Avg</span>(<span class="str">'reviews__rating'</span>),
+    <span class="cm"># محاسبه با F expressions</span>
+    profit=<span class="fn">F</span>(<span class="str">'price'</span>) - <span class="fn">F</span>(<span class="str">'cost'</span>),
+    <span class="cm"># شرطی</span>
+    status=<span class="fn">Case</span>(
+        <span class="fn">When</span>(stock__gt=<span class="num">0</span>, then=<span class="fn">Value</span>(<span class="str">'موجود'</span>)),
+        default=<span class="fn">Value</span>(<span class="str">'ناموجود'</span>),
+        output_field=<span class="fn">CharField</span>()
+    ),
+    <span class="cm"># کانکت</span>
+    full_name=<span class="fn">Concat</span>(<span class="str">'first_name'</span>, <span class="fn">Value</span>(<span class="str">' '</span>), <span class="str">'last_name'</span>),
+).<span class="fn">filter</span>(
+    avg_rating__gte=<span class="num">4.0</span>
+)</code></pre>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<!-- SECTION 6: Index -->
+<!-- ============================================================ -->
+<section id="sec6">
+  <div class="section-header">
+    <span class="level-indicator intermediate">🟡 سطح متوسط</span>
+    <div class="section-number">بخش ۰۶</div>
+    <h2 class="section-title">Index‌ها — سرعت جستجو را ۱۰۰x کن</h2>
+    <p class="section-desc">بدون ایندکس، دیتابیس باید کل جدول رو اسکن کنه. با ایندکس مناسب، جستجو O(log n) میشه.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon blue">📇</span>
+      انواع Index در جنگو
+    </div>
+    <pre><code><span class="kw">class</span> <span class="cls">Product</span>(models.Model):
+    name = models.<span class="fn">CharField</span>(max_length=<span class="num">200</span>)
+    slug = models.<span class="fn">SlugField</span>(unique=<span class="num">True</span>)  <span class="cm"># خودش ایندکس داره</span>
+    price = models.<span class="fn">DecimalField</span>(max_digits=<span class="num">10</span>, decimal_places=<span class="num">2</span>)
+    category = models.<span class="fn">ForeignKey</span>(Category, ...)  <span class="cm"># خودش ایندکس داره</span>
+    created_at = models.<span class="fn">DateTimeField</span>(auto_now_add=<span class="num">True</span>)
+    is_active = models.<span class="fn">BooleanField</span>(default=<span class="num">True</span>)
+    brand = models.<span class="fn">CharField</span>(max_length=<span class="num">100</span>)
+
+    <span class="kw">class</span> <span class="cls">Meta</span>:
+        <span class="cm"># ① تک‌فیلدی</span>
+        indexes = [
+            models.<span class="fn">Index</span>(fields=[<span class="str">'price'</span>]),
+            models.<span class="fn">Index</span>(fields=[<span class="str">'created_at'</span>]),
+
+            <span class="cm"># ② ترکیبی — برای کوئری‌های چندفیلدی</span>
+            models.<span class="fn">Index</span>(
+                fields=[<span class="str">'category'</span>, <span class="str">'price'</span>],
+                name=<span class="str">'idx_cat_price'</span>
+            ),
+
+            <span class="cm"># ③ شرطی — فقط ردیف‌های مرتبط ایندکس میشن</span>
+            models.<span class="fn">Index</span>(
+                condition=Q(is_active=<span class="num">True</span>),
+                fields=[<span class="str">'name'</span>],
+                name=<span class="str">'idx_active_name'</span>
+            ),
+
+            <span class="cm"># ④ Partial Index با PostgreSQL</span>
+            models.<span class="fn">Index</span>(
+                fields=[<span class="str">'brand'</span>],
+                condition=Q(price__gt=<span class="num">100</span>),
+                name=<span class="str">'idx_expensive_brand'</span>
+            ),
+        ]</code></pre>
+
+    <div class="tip-box">
+      <span class="tip-icon">💡</span>
+      <span><strong>قانون طلایی:</strong> فقط فیلدهایی که در <code>.filter()</code>، <code>.order_by()</code> و <code>.exclude()</code> استفاده میشن رو ایندکس کن. ایندکس زیاد = کند شدن INSERT/UPDATE.</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon orange">🔍</span>
+      Gin Index برای جستجوی متنی (PostgreSQL)
+    </div>
+    <pre><code><span class="kw">from</span> django.contrib.postgres.indexes <span class="kw">import</span> GinIndex
+<span class="kw">from</span> django.contrib.postgres.search <span class="kw">import</span> SearchVectorField
+
+<span class="kw">class</span> <span class="cls">Article</span>(models.Model):
+    title = models.<span class="fn">CharField</span>(max_length=<span class="num">300</span>)
+    content = models.<span class="fn">TextField</span>()
+    search_vector = models.<span class="fn">SearchVectorField</span>(null=<span class="num">True</span>)
+
+    <span class="kw">class</span> <span class="cls">Meta</span>:
+        indexes = [
+            <span class="fn">GinIndex</span>(
+                fields=[<span class="str">'search_vector'</span>],
+                name=<span class="str">'idx_search_vector'</span>
+            )
+        ]
+
+<span class="cm"># جستجوی تمام‌متنی سریع</span>
+articles = <span class="cls">Article</span>.objects.<span class="fn">filter</span>(
+    search_vector=<span class="fn">SearchQuery</span>(<span class="str">'جنگو بهینه‌سازی'</span>)
+)</code></pre>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<!-- SECTION 7: Raw SQL -->
+<!-- ============================================================ -->
+<section id="sec7">
+  <div class="section-header">
+    <span class="level-indicator advanced">🔴 سطح پیشرفته</span>
+    <div class="section-number">بخش ۰۷</div>
+    <h2 class="section-title">Raw SQL — وقتی ORM کافی نیست</h2>
+    <p class="section-desc">گاهی برای کوئری‌های پیچیده، RAW SQL بهترین گزینه‌ست.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon red">🛠️</span>
+      روش‌های مختلف Raw SQL
+    </div>
+    <pre><code><span class="cm"># ① raw() — ساده‌ترین روش</span>
+users = <span class="cls">User</span>.objects.<span class="fn">raw</span>(<span class="str">'''
+    SELECT id, first_name, last_name,
+           COUNT(order.id) as order_count
+    FROM auth_user u
+    LEFT JOIN shop_order o ON o.user_id = u.id
+    GROUP BY u.id
+    HAVING COUNT(o.id) > 5
+    ORDER BY order_count DESC
+'''</span>)
+
+<span class="cm"># ② connection.cursor — برای کوئری‌های غیرSELECT</span>
+<span class="kw">from</span> django.db <span class="kw">import</span> connection
+
+<span class="kw">with</span> connection.<span class="fn">cursor</span>() <span class="kw">as</span> cursor:
+    cursor.<span class="fn">execute</span>(<span class="str">"""
+        WITH monthly_sales AS (
+            SELECT
+                date_trunc('month', created_at) AS month,
+                SUM(total) AS revenue
+            FROM shop_order
+            WHERE created_at >= NOW() - INTERVAL '1 year'
+            GROUP BY 1
+        )
+        SELECT month, revenue,
+               LAG(revenue) OVER (ORDER BY month) AS prev_month,
+               revenue - LAG(revenue) OVER (ORDER BY month) AS growth
+        FROM monthly_sales
+        ORDER BY month DESC
+    """</span>)
+    results = <span class="fn">dictfetchall</span>(cursor)
+
+<span class="cm"># ③ تابع کمکی</span>
+<span class="kw">def</span> <span class="fn">dictfetchall</span>(cursor):
+    columns = [col[<span class="num">0</span>] <span class="kw">for</span> col <span class="kw">in</span> cursor.description]
+    <span class="kw">return</span> [
+        <span class="fn">dict</span>(<span class="fn">zip</span>(columns, row))
+        <span class="kw">for</span> row <span class="kw">in</span> cursor.<span class="fn">fetchall</span>()
+    ]</code></pre>
+
+    <div class="warn-box">
+      <span class="tip-icon">⚠️</span>
+      <span><strong>SQL Injection:</strong> هیچوقت رشته‌ها رو مستقیم در SQL قرار نده. از پارامتر استفاده کن: <code>cursor.execute("... WHERE id = %s", [user_id])</code></span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<!-- SECTION 8: Caching -->
+<!-- ============================================================ -->
+<section id="sec8">
+  <div class="section-header">
+    <span class="level-indicator advanced">🔴 سطح پیشرفته</span>
+    <div class="section-number">بخش ۰۸</div>
+    <h2 class="section-title">Caching — حافظه پنهان چندسطحی</h2>
+    <p class="section-desc">از کش سطح تا کش سطح DB، چندین لایه کش برای حداکثر سرعت.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon purple">🧠</span>
+      سطوح مختلف کش
+    </div>
+    <pre><code><span class="cm"># ── settings.py ──────────────────────────────</span>
+CACHES = {
+    <span class="str">'default'</span>: {
+        <span class="str">'BACKEND'</span>: <span class="str">'django.core.cache.backends.redis.RedisCache'</span>,
+        <span class="str">'LOCATION'</span>: <span class="str">'redis://127.0.0.1:6379/1'</span>,
+        <span class="str">'OPTIONS'</span>: {
+            <span class="str">'CLIENT_CLASS'</span>: <span class="str">'django_redis.client.DefaultClient'</span>,
+        },
+        <span class="str">'KEY_PREFIX'</span>: <span class="str">'myapp'</span>,
+        <span class="str">'TIMEOUT'</span>: <span class="num">300</span>,  <span class="cm"># 5 دقیقه پیش‌فرض</span>
+    },
+    <span class="str">'long_term'</span>: {
+        <span class="str">'BACKEND'</span>: <span class="str">'django.core.cache.backends.redis.RedisCache'</span>,
+        <span class="str">'LOCATION'</span>: <span class="str">'redis://127.0.0.1:6379/2'</span>,
+        <span class="str">'TIMEOUT'</span>: <span class="num">3600</span>,  <span class="cm"># 1 ساعت</span>
+    }
+}
+
+<span class="cm"># ── استفاده در ویو ──────────────────────────</span>
+<span class="kw">from</span> django.core.cache <span class="kw">import</span> caches
+
+<span class="kw">def</span> <span class="fn">product_list</span>(request):
+    cache = caches[<span class="str">'default'</span>]
+    cache_key = <span class="str">'product_list_page_'</span> + request.GET.<span class="fn">get</span>(<span class="str">'page'</span>, <span class="str">'1'</span>)
+
+    data = cache.<span class="fn">get</span>(cache_key)
+    <span class="kw">if</span> data <span class="kw">is</span> <span class="num">None</span>:
+        data = <span class="fn">list</span>(
+            <span class="cls">Product</span>.objects.<span class="fn">filter</span>(is_active=<span class="num">True</span>)
+            .<span class="fn">select_related</span>(<span class="str">'category'</span>)
+            .<span class="fn">values</span>(<span class="str">'id'</span>, <span class="str">'name'</span>, <span class="str">'price'</span>, <span class="str">'category__name'</span>)
+        )
+        cache.<span class="fn">set</span>(cache_key, data, timeout=<span class="num">60</span>)
+
+    <span class="kw">return</span> <span class="fn">JsonResponse</span>(data, safe=<span class="num">False</span>)</code></pre>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon green">⚡</span>
+      کش سطح Template و View
+    </div>
+    <pre><code><span class="cm"># ── کش سطح ویو ───────────────────────────</span>
+<span class="kw">from</span> django.views.decorators.cache <span class="kw">import</span> cache_page
+
+<span class="dec">@cache_page</span>(<span class="num">60</span> * <span class="num">15</span>)  <span class="cm"># 15 دقیقه</span>
+<span class="kw">def</span> <span class="fn">product_detail</span>(request, pk):
+    product = <span class="cls">Product</span>.objects.<span class="fn">get</span>(pk=pk)
+    <span class="kw">return</span> <span class="fn">render</span>(request, <span class="str">'product.html'</span>, {<span class="str">'product'</span>: product})
+
+<span class="cm"># ── کش سطح Template ───────────────────────</span>
+<span class="cm">{% load cache %}</span>
+<span class="cm">{% cache 300 product_sidebar %}</span>
+<span class="cm">    &lt;!-- محتوای گران‌قیمت --&gt;</span>
+<span class="cm">    {% for cat in categories %}</span>
+<span class="cm">        ...</span>
+<span class="cm">    {% endfor %}</span>
+<span class="cm">{% endcache %}</span>
+
+<span class="cm"># ── کش با پارامتر ─────────────────────────</span>
+<span class="cm">{% cache 300 product_card product.id %}</span>
+<span class="cm">    ...</span>
+<span class="cm">{% endcache %}</span>
+
+<span class="cm"># ── Cache Decorator برای توابع ────────────</span>
+<span class="kw">from</span> django.utils.decorators <span class="kw">import</span> method_decorator
+<span class="kw">from</span> django.views.decorators.cache <span class="kw">import</span> cache_page
+
+<span class="kw">class</span> <span class="cls">ProductListView</span>(View):
+    <span class="dec">@method_decorator</span>(cache_page(<span class="num">60</span> * <span class="num">5</span>))
+    <span class="kw">def</span> <span class="fn">get</span>(self, request):
+        ...</code></pre>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon orange">🔑</span>
+      نسخه‌بندی کش (Cache Versioning)
+    </div>
+    <pre><code><span class="cm"># وقتی داده تغییر می‌کنه، نسخه کش رو بالا ببر</span>
+<span class="cm"># به جای حذف دستی کلیدها</span>
+
+cache.<span class="fn">incr_version</span>(<span class="str">'product_list'</span>)
+
+<span class="cm"># یا استفاده از نسخه در کلید</span>
+VERSION = <span class="num">3</span>
+cache_key = f<span class="str">'products_v{VERSION}_page_{page}'</span>
+
+<span class="cm"># Pattern: Cache Aside</span>
+<span class="kw">def</span> <span class="fn">get_product</span>(product_id):
+    cache_key = f<span class="str">'product_{product_id}'</span>
+    product = cache.<span class="fn">get</span>(cache_key)
+
+    <span class="kw">if</span> product <span class="kw">is</span> <span class="num">None</span>:
+        product = <span class="cls">Product</span>.objects.<span class="fn">get</span>(id=product_id)
+        cache.<span class="fn">set</span>(cache_key, product, timeout=<span class="num">300</span>)
+
+    <span class="kw">return</span> product
+
+<span class="kw">def</span> <span class="fn">update_product</span>(product_id, data):
+    product = <span class="cls">Product</span>.objects.<span class="fn">get</span>(id=product_id)
+    <span class="cm"># ... update logic ...</span>
+    product.<span class="fn">save</span>()
+    cache.<span class="fn">delete</span>(f<span class="str">'product_{product_id}'</span>)  <span class="cm"># حذف کش قدیمی</span></code></pre>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<!-- SECTION 9: Async Views -->
+<!-- ============================================================ -->
+<section id="sec9">
+  <div class="section-header">
+    <span class="level-indicator advanced">🔴 سطح پیشرفته</span>
+    <div class="section-number">بخش ۰۹</div>
+    <h2 class="section-title">Async Views — ویوهای ناهمگام</h2>
+    <p class="section-desc">جنگو ۴.۱+ از async پشتیبانی می‌کنه. برای I/O-bound عملیات، async معجزه می‌کنه.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon green">🔄</span>
+      Async View ساده
+    </div>
+
+    <div class="code-compare">
+      <div class="code-block">
+        <div class="code-label info">↺ Sync View</div>
+        <pre><code><span class="cm"># سینک — بلاک شدن ترد</span>
+<span class="kw">import</span> requests
+
+<span class="kw">def</span> <span class="fn">dashboard</span>(request):
+    <span class="cm"># هر کال ۲ ثانیه بلاک می‌کنه</span>
+    data1 = requests.<span class="fn">get</span>(API_1).json()
+    data2 = requests.<span class="fn">get</span>(API_2).json()
+    data3 = requests.<span class="fn">get</span>(API_3).json()
+
+    <span class="cm"># مجموع: ۶ ثانیه!</span>
+    <span class="kw">return</span> <span class="fn">render</span>(request, ...)</code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-label good">✓ Async View</div>
+        <pre><code><span class="cm"># async — همزمان</span>
+<span class="kw">import</span> httpx
+<span class="kw">import</span> asyncio
+
+<span class="kw">async def</span> <span class="fn">dashboard</span>(request):
+    <span class="kw">async with</span> httpx.<span class="fn">AsyncClient</span>() <span class="kw">as</span> client:
+        <span class="cm"># هر سه همزمان اجرا میشن!</span>
+        r1, r2, r3 = <span class="kw">await</span> asyncio.<span class="fn">gather</span>(
+            client.<span class="fn">get</span>(API_1),
+            client.<span class="fn">get</span>(API_2),
+            client.<span class="fn">get</span>(API_3),
+        )
+
+    <span class="cm"># مجموع: ۲ ثانیه!</span>
+    <span class="kw">return</span> <span class="fn">render</span>(request, ...)</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon blue">🗄️</span>
+      Async ORM (جنگو ۵+)
+    </div>
+    <pre><code><span class="cm"># Async ORM operations — Django 5+</span>
+<span class="kw">async def</span> <span class="fn">user_list</span>(request):
+    <span class="cm"># async iteration</span>
+    users = []
+    <span class="kw">async for</span> user <span class="kw">in</span> <span class="cls">User</span>.objects.<span class="fn">filter</span>(is_active=<span class="num">True</span>):
+        users.<span class="fn">append</span>(user)
+
+    <span class="cm"># async get</span>
+    user = <span class="kw">await</span> <span class="cls">User</span>.objects.<span class="fn">aget</span>(id=<span class="num">1</span>)
+
+    <span class="cm"># async create</span>
+    user = <span class="kw">await</span> <span class="cls">User</span>.objects.<span class="fn">acreate</span>(
+        username=<span class="str">'new_user'</span>,
+        email=<span class="str">'test@example.com'</span>
+    )
+
+    <span class="cm"># async count</span>
+    count = <span class="kw">await</span> <span class="cls">User</span>.objects.<span class="fn">acount</span>()
+
+    <span class="cm"># async exists</span>
+    exists = <span class="kw">await</span> <span class="cls">User</span>.objects.<span class="fn">filter</span>(
+        email=<span class="str">'test@example.com'</span>
+    ).<span class="fn">aexists</span>()
+
+    <span class="kw">return</span> <span class="fn">JsonResponse</span>({<span class="str">'count'</span>: count})</code></pre>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<!-- SECTION 10: Database Tuning -->
+<!-- ============================================================ -->
+<section id="sec10">
+  <div class="section-header">
+    <span class="level-indicator expert">🟣 سطح خبره — Database Tuning</span>
+    <div class="section-number">بخش ۱۰</div>
+    <h2 class="section-title">بهینه‌سازی پایگاه داده — PostgreSQL & SQLite</h2>
+    <p class="section-desc">تنظیمات سطح دیتابیس که تأثیر مستقیم روی عملکرد دارن. WAL Mode، Shared Buffers، و خیلی بیشتر.</p>
+  </div>
+
+  <!-- SQLite -->
+  <div class="card">
+    <div class="card-title">
+      <span class="icon blue">🗄️</span>
+      SQLite — بهینه‌سازی حرفه‌ای
+    </div>
+
+    <div class="code-compare">
+      <div class="code-block">
+        <div class="code-label bad">✗ پیش‌فرض SQLite — کند</div>
+        <pre><code><span class="cm"># settings.py — پیش‌فرض</span>
+DATABASES = {
+    <span class="str">'default'</span>: {
+        <span class="str">'ENGINE'</span>: <span class="str">'django.db.backends.sqlite3'</span>,
+        <span class="str">'NAME'</span>: BASE_DIR / <span class="str">'db.sqlite3'</span>,
+    }
+}
+
+<span class="cm"># مشکلات:</span>
+<span class="cm"># - WAL غیرفعال = قفل نوشتن</span>
+<span class="cm"># - Journal Mode = DELETE (کند)</span>
+<span class="cm"># - بدون busy_timeout</span>
+<span class="cm"># - Synchronous = FULL (کند)</span></code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-label good">✓ SQLite بهینه‌شده</div>
+        <pre><code><span class="cm"># settings.py — بهینه</span>
+DATABASES = {
+    <span class="str">'default'</span>: {
+        <span class="str">'ENGINE'</span>: <span class="str">'django.db.backends.sqlite3'</span>,
+        <span class="str">'NAME'</span>: BASE_DIR / <span class="str">'db.sqlite3'</span>,
+        <span class="str">'OPTIONS'</span>: {
+            <span class="str">'transaction_mode'</span>: <span class="str">'IMMEDIATE'</span>,
+        },
+    }
+}
+
+<span class="cm"># در AppConfig.ready() یا startup:</span>
+<span class="kw">import</span> sqlite3
+conn = sqlite3.<span class="fn">connect</span>(db_path)
+conn.<span class="fn">execute</span>(<span class="str">'PRAGMA journal_mode=WAL'</span>)
+conn.<span class="fn">execute</span>(<span class="str">'PRAGMA synchronous=NORMAL'</span>)
+conn.<span class="fn">execute</span>(<span class="str">'PRAGMA cache_size=-64000'</span>)  <span class="cm"># 64MB</span>
+conn.<span class="fn">execute</span>(<span class="str">'PRAGMA busy_timeout=5000'</span>)
+conn.<span class="fn">execute</span>(<span class="str">'PRAGMA temp_store=MEMORY'</span>)
+conn.<span class="fn">execute</span>(<span class="str">'PRAGMA mmap_size=268435456'</span>)  <span class="cm"># 256MB</span></code></pre>
+      </div>
+    </div>
+
+    <div class="explanation">
+      <strong>PRAGMA‌های حیاتی SQLite:</strong><br>
+      • <code>journal_mode=WAL</code> — Write-Ahead Logging: خواندن و نوشتن همزمان ممکن میشه. سرعت نوشتن ۲-۵x بهتر.<br>
+      • <code>synchronous=NORMAL</code> — به جای FULL، فقط در نقاط خاص sync می‌کنه. سرعت ۲x بهتر با امنیت کافی.<br>
+      • <code>cache_size=-64000</code> — ۶۴ مگابایت کش. منفی یعنی کیلوبایت.<br>
+      • <code>busy_timeout=5000</code> — ۵ ثانیه صبر قبل از خطا. از SQLITE_BUSY جلوگیری می‌کنه.<br>
+      • <code>mmap_size=256MB</code> — Memory-mapped I/O: خواندن فایل دیتابیس مستقیم از حافظه.
+    </div>
+  </div>
+
+  <!-- SQLite WAL deep dive -->
+  <div class="card">
+    <div class="card-title">
+      <span class="icon cyan">📝</span>
+      WAL Mode عمیق‌تر — چرا و چگونه
+    </div>
+    <pre><code><span class="cm"># ── درک WAL Mode ─────────────────────────────</span>
+<span class="cm">#</span>
+<span class="cm"># DELETE Mode (پیش‌فرض):</span>
+<span class="cm">#   نوشتن → قفل کل دیتابیس → خواندن منتظر می‌مونه</span>
+<span class="cm">#   ┌──────┐</span>
+<span class="cm">#   │ WRITE │──── قفل ────→ خواندن منتظر...</span>
+<span class="cm">#   └──────┘</span>
+<span class="cm">#</span>
+<span class="cm"># WAL Mode:</span>
+<span class="cm">#   نوشتن → WAL file → خواندن همزمان از DB اصلی</span>
+<span class="cm">#   ┌──────┐     ┌──────────┐</span>
+<span class="cm">#   │ WRITE │────→│ WAL File │</span>
+<span class="cm">#   └──────┘     └──────────┘</span>
+<span class="cm">#   ┌──────┐     ┌──────────┐</span>
+<span class="cm">#   │ READ │────→│ DB File  │  ← همزمان!</span>
+<span class="cm">#   └──────┘     └──────────┘</span>
+
+<span class="cm"># ── Django Integration ────────────────────────</span>
+<span class="kw">from</span> django.db.backends.sqlite3.base <span class="kw">import</span> DatabaseWrapper
+
+<span class="kw">class</span> <span class="cls">SqliteConfig</span>:
+    <span class="str">"""اعمال تنظیمات SQLite هر بار اتصال"""</span>
+
+    <span class="dec">@staticmethod</span>
+    <span class="kw">def</span> <span class="fn">configure</span>(connection):
+        cursor = connection.<span class="fn">cursor</span>()
+        cursor.<span class="fn">execute</span>(<span class="str">'PRAGMA journal_mode=WAL'</span>)
+        cursor.<span class="fn">execute</span>(<span class="str">'PRAGMA synchronous=NORMAL'</span>)
+        cursor.<span class="fn">execute</span>(<span class="str">'PRAGMA cache_size=-64000'</span>)
+        cursor.<span class="fn">execute</span>(<span class="str">'PRAGMA busy_timeout=5000'</span>)
+        cursor.<span class="fn">execute</span>(<span class="str">'PRAGMA temp_store=MEMORY'</span>)
+        cursor.<span class="fn">execute</span>(<span class="str">'PRAGMA mmap_size=268435456'</span>)
+        cursor.<span class="fn">execute</span>(<span class="str">'PRAGMA wal_autocheckpoint=1000'</span>)
+
+<span class="cm"># اتصال با signal</span>
+<span class="kw">from</span> django.db.backends.signals <span class="kw">import</span> connection_created
+
+<span class="kw">def</span> <span class="fn">setup_sqlite</span>(sender, connection, **kwargs):
+    <span class="kw">if</span> connection.vendor == <span class="str">'sqlite'</span>:
+        <span class="cls">SqliteConfig</span>.<span class="fn">configure</span>(connection)
+
+connection_created.<span class="fn">connect</span>(setup_sqlite)
+
+<span class="cm"># ── Checkpoint Management ─────────────────────</span>
+<span class="cm"># WAL فایل بزرگ = کندی. checkpoint منظم لازمه:</span>
+<span class="cm">#</span>
+<span class="cm"># wal_autocheckpoint=1000 → هر ۱۰۰۰ صفحه</span>
+<span class="cm"># PRAGMA wal_checkpoint(TRUNCATE) → دستی</span>
+<span class="cm">#</span>
+<span class="cm"># در production:</span>
+<span class="kw">import</span> sqlite3
+conn = sqlite3.<span class="fn">connect</span>(<span class="str">'db.sqlite3'</span>)
+conn.<span class="fn">execute</span>(<span class="str">'PRAGMA wal_checkpoint(TRUNCATE)'</span>)</code></pre>
+  </div>
+
+  <!-- PostgreSQL -->
+  <div class="card">
+    <div class="card-title">
+      <span class="icon purple">🐘</span>
+      PostgreSQL — تنظیمات حرفه‌ای
+    </div>
+    <pre><code><span class="cm"># ── settings.py ─────────────────────────────</span>
+DATABASES = {
+    <span class="str">'default'</span>: {
+        <span class="str">'ENGINE'</span>: <span class="str">'django.db.backends.postgresql'</span>,
+        <span class="str">'NAME'</span>: <span class="str">'mydb'</span>,
+        <span class="str">'USER'</span>: <span class="str">'myuser'</span>,
+        <span class="str">'PASSWORD'</span>: <span class="str">'mypassword'</span>,
+        <span class="str">'HOST'</span>: <span class="str">'localhost'</span>,
+        <span class="str">'PORT'</span>: <span class="str">'5432'</span>,
+        <span class="str">'OPTIONS'</span>: {
+            <span class="str">'connect_timeout'</span>: <span class="num">5</span>,
+            <span class="str">'options'</span>: <span class="str">'-c statement_timeout=30000'</span>,  <span class="cm"># 30s timeout</span>
+        },
+    }
+}</code></pre>
+
+    <div class="two-col" style="margin-top:1.5rem;">
+      <div>
+        <h4 style="color:var(--accent-green);margin-bottom:0.5rem;">postgresql.conf</h4>
+        <pre><code><span class="cm"># Shared Buffers — 25% RAM</span>
+shared_buffers = <span class="str">'4GB'</span>
+
+<span class="cm"># Work Memory — per-operation sort</span>
+work_mem = <span class="str">'256MB'</span>
+
+<span class="cm"># Effective Cache Size — 75% RAM</span>
+effective_cache_size = <span class="str">'12GB'</span>
+
+<span class="cm"># Maintenance Work Memory</span>
+maintenance_work_mem = <span class="str">'1GB'</span>
+
+<span class="cm"># WAL Settings</span>
+wal_buffers = <span class="str">'64MB'</span>
+min_wal_size = <span class="str">'1GB'</span>
+max_wal_size = <span class="str">'4GB'</span>
+
+<span class="cm"># Random Page Cost (SSD)</span>
+random_page_cost = <span class="num">1.1</span>
+
+<span class="cm"># Parallel Queries</span>
+max_parallel_workers = <span class="num">8</span>
+max_parallel_workers_per_gather = <span class="num">4</span>
+
+<span class="cm"># Autovacuum</span>
+autovacuum_max_workers = <span class="num">3</span>
+autovacuum_naptime = <span class="str">'30s'</span></code></pre>
+      </div>
+      <div>
+        <h4 style="color:var(--accent-orange);margin-bottom:0.5rem;">تنظیمات مهم</h4>
+        <ul class="check-list">
+          <li><strong>shared_buffers:</strong> ۲۵٪ RAM سیستم. کش اصلی PostgreSQL.</li>
+          <li><strong>work_mem:</strong> حافظه برای sort/hash operations. مراقب باش زیاد نباشه چون per-connection هست.</li>
+          <li><strong>effective_cache_size:</strong> ۷۵٪ RAM. به planner کمک می‌کنه تصمیم بگیره از ایندکس استفاده کنه یا seq scan.</li>
+          <li><strong>random_page_cost:</strong> برای SSD = 1.1 (پیش‌فرض 4.0 برای HDD).</li>
+          <li><strong>WAL:</strong> Write-Ahead Log برای durability و replication.</li>
+          <li><strong>Autovacuum:</strong> فضای مرده رو پاک می‌کنه. بدونش DB کند میشه.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- PostgreSQL Explain -->
+  <div class="card">
+    <div class="card-title">
+      <span class="icon orange">🔍</span>
+      EXPLAIN ANALYZE — تحلیل کوئری
+    </div>
+    <pre><code><span class="cm"># ── Django Debug Toolbar + EXPLAIN ──────────</span>
+<span class="kw">from</span> django.db <span class="kw">import</span> connection
+
+<span class="kw">def</span> <span class="fn">explain_query</span>(queryset):
+    <span class="str">"""EXPLAIN ANALYZE روی هر QuerySet"""</span>
+    sql, params = queryset.<span class="fn">query</span>.<span class="fn">sql_with_params</span>()
+    <span class="kw">with</span> connection.<span class="fn">cursor</span>() <span class="kw">as</span> cursor:
+        cursor.<span class="fn">execute</span>(
+            f<span class="str">"EXPLAIN ANALYZE {sql}"</span>,
+            params
+        )
+        <span class="kw">return</span> cursor.<span class="fn">fetchall</span>()
+
+<span class="cm"># استفاده:</span>
+qs = <span class="cls">Product</span>.objects.<span class="fn">filter</span>(category_id=<span class="num">5</span>).<span class="fn">order_by</span>(<span class="str">'-created_at'</span>)
+<span class="kw">for</span> line <span class="kw">in</span> <span class="fn">explain_query</span>(qs):
+    <span class="fn">print</span>(line)
+
+<span class="cm"># خروجی نمونه:</span>
+<span class="cm"># Seq Scan on product  (cost=0.00..1234.56 rows=100)</span>
+<span class="cm">#   Filter: (category_id = 5)</span>
+<span class="cm">#   Rows Removed by Filter: 9900</span>
+<span class="cm">#</span>
+<span class="cm"># ⚠️ اگه Seq Scan دیدی و جدول بزرگه → ایندکس لازمه!</span></code></pre>
+
+    <div class="tip-box">
+      <span class="tip-icon">💡</span>
+      <span><strong>نکات EXPLAIN:</strong> Seq Scan = اسکن کل جدول (بد برای جدول بزرگ). Index Scan = استفاده از ایندکس (خوب). Nested Loop = JOIN. Hash Join = JOIN بزرگ. همیشه EXPLAIN ANALYZE بزن تا زمان واقعی رو ببینی.</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<!-- SECTION 11: Connection Pooling -->
+<!-- ============================================================ -->
+<section id="sec11">
+  <div class="section-header">
+    <span class="level-indicator expert">🟣 سطح خبره</span>
+    <div class="section-number">بخش ۱۱</div>
+    <h2 class="section-title">Connection Pooling — مدیریت اتصالات</h2>
+    <p class="section-desc">هر بار اتصال جدید = ۵۰-۱۰۰ms هزینه. با connection pool این هزینه حذف میشه.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon blue">🔌</span>
+      PgBouncer + django-db-connection-pool
+    </div>
+
+    <div class="code-compare">
+      <div class="code-block">
+        <div class="code-label bad">✗ بدون Connection Pool</div>
+        <pre><code><span class="cm"># هر request = اتصال جدید</span>
+<span class="cm"># connect() → authenticate → ready</span>
+<span class="cm"># هزینه: 50-100ms هر بار</span>
+<span class="cm">#</span>
+<span class="cm"># 1000 req/s = 1000 اتصال جدید</span>
+<span class="cm"># PostgreSQL max_connections = 100</span>
+<span class="cm"># = خطا: too many connections!</span></code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-label good">✓ با Connection Pool</div>
+        <pre><code><span class="cm"># اتصال‌ها از pool گرفته میشن</span>
+<span class="cm"># connect() → از pool → فوری</span>
+<span class="cm"># هزینه: ~0ms</span>
+<span class="cm">#</span>
+<span class="cm"># 1000 req/s = 20 اتصال واقعی</span>
+<span class="cm"># بقیه reuse میشن</span></code></pre>
+      </div>
+    </div>
+
+    <pre style="margin-top:1.5rem;"><code><span class="cm"># ── PgBouncer (خارج از Django) ─────────────</span>
+<span class="cm"># pgbouncer.ini</span>
+<span class="cm"># [databases]</span>
+<span class="cm"># mydb = host=127.0.0.1 port=5432 dbname=mydb</span>
+<span class="cm">#</span>
+<span class="cm"># [pgbouncer]</span>
+<span class="cm"># pool_mode = transaction</span>
+<span class="cm"># max_client_conn = 1000</span>
+<span class="cm"># default_pool_size = 20</span>
+
+<span class="cm"># ── settings.py با PgBouncer ────────────────</span>
+DATABASES = {
+    <span class="str">'default'</span>: {
+        <span class="str">'ENGINE'</span>: <span class="str">'django.db.backends.postgresql'</span>,
+        <span class="str">'HOST'</span>: <span class="str">'127.0.0.1'</span>,
+        <span class="str">'PORT'</span>: <span class="str">'6432'</span>,  <span class="cm"># PgBouncer port, نه PostgreSQL</span>
+    }
+}
+
+<span class="cm"># ── django-db-connection-pool ────────────────</span>
+<span class="cm"># pip install django-db-connection-pool</span>
+DATABASES = {
+    <span class="str">'default'</span>: {
+        <span class="str">'ENGINE'</span>: <span class="str">'dj_db_conn_pool.backends.postgresql'</span>,
+        <span class="str">'POOL_OPTIONS'</span>: {
+            <span class="str">'POOL_SIZE'</span>: <span class="num">20</span>,
+            <span class="str">'MAX_OVERFLOW'</span>: <span class="num">10</span>,
+            <span class="str">'RECYCLE'</span>: <span class="num">300</span>,  <span class="cm"># ثانیه</span>
+        },
+    }
+}</code></pre>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<!-- SECTION 12: Bulk Operations -->
+<!-- ============================================================ -->
+<section id="sec12">
+  <div class="section-header">
+    <span class="level-indicator intermediate">🟡 سطح متوسط</span>
+    <div class="section-number">بخش ۱۲</div>
+    <h2 class="section-title">Bulk Operations — عملیات انبوه</h2>
+    <p class="section-desc">به جای save() تکی در حلقه، از bulk_create و bulk_update استفاده کن.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon green">📦</span>
+      bulk_create — درج انبوه
+    </div>
+
+    <div class="code-compare">
+      <div class="code-block">
+        <div class="code-label bad">✗ save() تکی — N کوئری</div>
+        <pre><code><span class="cm"># ❌ 1000 ردیف = 1000 INSERT</span>
+products = []
+<span class="kw">for</span> data <span class="kw">in</span> csv_data:
+    p = <span class="cls">Product</span>(
+        name=data[<span class="str">'name'</span>],
+        price=data[<span class="str">'price'</span>],
+    )
+    p.<span class="fn">save</span>()  <span class="cm"># 1 کوئری هر بار!</span>
+
+<span class="cm"># 1000 کوئری INSERT</span>
+<span class="cm"># زمان: ~30 ثانیه</span></code></pre>
+        <div class="perf-badge slow">🐌 1000 کوئری / 30 ثانیه</div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-label good">✓ bulk_create — ۱ کوئری</div>
+        <pre><code><span class="cm"># ✓ یک INSERT بزرگ</span>
+products = [
+    <span class="cls">Product</span>(name=d[<span class="str">'name'</span>], price=d[<span class="str">'price'</span>])
+    <span class="kw">for</span> d <span class="kw">in</span> csv_data
+]
+
+<span class="cls">Product</span>.objects.<span class="fn">bulk_create</span>(
+    products,
+    batch_size=<span class="num">1000</span>,  <span class="cm"># هر 1000 تایی یه INSERT</span>
+    ignore_conflicts=<span class="num">True</span>
+)
+
+<span class="cm"># 1 کوئری INSERT با 1000 VALUE</span>
+<span class="cm"># زمان: ~0.3 ثانیه</span></code></pre>
+        <div class="perf-badge fast">⚡ 1 کوئری / 0.3 ثانیه</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon orange">🔄</span>
+      bulk_update — بروزرسانی انبوه
+    </div>
+    <pre><code><span class="cm"># ❌ بد</span>
+<span class="kw">for</span> product <span class="kw">in</span> products:
+    product.price *= <span class="num">1.1</span>
+    product.<span class="fn">save</span>()  <span class="cm"># N کوئری UPDATE</span>
+
+<span class="cm"># ✓ خوب</span>
+products = <span class="fn">list</span>(<span class="cls">Product</span>.objects.<span class="fn">filter</span>(category=<span class="str">'electronics'</span>))
+<span class="kw">for</span> p <span class="kw">in</span> products:
+    p.price *= <span class="num">1.1</span>
+
+<span class="cls">Product</span>.objects.<span class="fn">bulk_update</span>(
+    products,
+    [<span class="str">'price'</span>],      <span class="cm"># فقط فیلدهای تغییر کرده</span>
+    batch_size=<span class="num">500</span>
+)
+
+<span class="cm"># ── F Expressions — حتی بهتر ──────────────</span>
+<span class="cm"># بدون نیاز به خواندن از DB</span>
+<span class="cls">Product</span>.objects.<span class="fn">filter</span>(
+    category=<span class="str">'electronics'</span>
+).<span class="fn">update</span>(
+    price=<span class="fn">F</span>(<span class="str">'price'</span>) * <span class="num">1.1</span>
+)
+<span class="cm"># یک UPDATE ... SET price = price * 1.1</span>
+<span class="cm"># بدون SELECT اول!</span></code></pre>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon purple">🎯</span>
+      get_or_create و update_or_create
+    </div>
+    <pre><code><span class="cm"># ✓ اتمیک — بدون race condition</span>
+obj, created = <span class="cls">Product</span>.objects.<span class="fn">get_or_create</span>(
+    slug=<span class="str">'django-book'</span>,
+    defaults={
+        <span class="str">'name'</span>: <span class="str">'کتاب جنگو'</span>,
+        <span class="str">'price'</span>: <span class="num">50000</span>,
+    }
+)
+
+<span class="cm"># ✓ بروزرسانی یا ایجاد</span>
+obj, created = <span class="cls">Product</span>.objects.<span class="fn">update_or_create</span>(
+    slug=<span class="str">'django-book'</span>,
+    defaults={
+        <span class="str">'price'</span>: <span class="num">55000</span>,  <span class="cm"># فقط اگه وجود داشته باشه</span>
+    }
+)
+
+<span class="cm"># ── bulk ترکیبی ────────────────────────────</span>
+<span class="cm"># Django 4.1+: update_conflicts</span>
+<span class="cls">Product</span>.objects.<span class="fn">bulk_create</span>(
+    products,
+    update_conflicts=<span class="num">True</span>,
+    unique_fields=[<span class="str">'slug'</span>],
+    update_fields=[<span class="str">'price'</span>, <span class="str">'stock'</span>],
+)</code></pre>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<!-- SECTION 13: Signals -->
+<!-- ============================================================ -->
+<section id="sec13">
+  <div class="section-header">
+    <span class="level-indicator intermediate">🟡 سطح متوسط</span>
+    <div class="section-number">بخش ۱۳</div>
+    <h2 class="section-title">Signals — بهینه‌سازی سیگنال‌ها</h2>
+    <p class="section-desc">سیگنال‌ها قدرتمندن ولی اگه درست استفاده نشن، عملکرد رو نابود می‌کنن.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon red">⚠️</span>
+      مشکلات رایج سیگنال‌ها
+    </div>
+
+    <div class="code-compare">
+      <div class="code-block">
+        <div class="code-label bad">✗ سیگنال کند</div>
+        <pre><code><span class="cm"># ❌ save اضافی در سیگنال</span>
+<span class="dec">@receiver</span>(post_save, sender=Order)
+<span class="kw">def</span> <span class="fn">update_inventory</span>(sender, instance, **kwargs):
+    <span class="kw">for</span> item <span class="kw">in</span> instance.items.<span class="fn">all</span>():
+        product = item.product
+        product.stock -= item.quantity
+        product.<span class="fn">save</span>()  <span class="cm"># N UPDATE!</span>
+
+    <span class="cm"># N+1 + N UPDATE = 2N+1 کوئری</span>
+    <span class="cm"># و infinite loop risk اگه</span>
+    <span class="cm"># post_save دوباره trigger بشه</span></code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-label good">✓ سیگنال بهینه</div>
+        <pre><code><span class="cm"># ✓ F Expression + bulk_update</span>
+<span class="dec">@receiver</span>(post_save, sender=Order)
+<span class="kw">def</span> <span class="fn">update_inventory</span>(sender, instance, **kwargs):
+    <span class="kw">if</span> <span class="kw">not</span> instance._state.adding:
+        <span class="kw">return</span>  <span class="cm"># فقط برای create</span>
+
+    items = instance.items.<span class="fn">select_related</span>(
+        <span class="str">'product'</span>
+    )
+    products = []
+    <span class="kw">for</span> item <span class="kw">in</span> items:
+        item.product.stock = <span class="fn">F</span>(<span class="str">'stock'</span>) - item.quantity
+        products.<span class="fn">append</span>(item.product)
+
+    <span class="cls">Product</span>.objects.<span class="fn">bulk_update</span>(
+        products, [<span class="str">'stock'</span>]
+    )</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<!-- SECTION 14: Serializer -->
+<!-- ============================================================ -->
+<section id="sec14">
+  <div class="section-header">
+    <span class="level-indicator intermediate">🟡 سطح متوسط</span>
+    <div class="section-number">بخش ۱۴</div>
+    <h2 class="section-title">DRF Serializer — بهینه‌سازی API</h2>
+    <p class="section-desc">serializer‌ها می‌تونن منبع اصلی N+1 باشن. بهینه‌سازیشون حیاتیه.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon green">🚀</span>
+      Serializer بهینه
+    </div>
+    <pre><code><span class="cm"># ── مدل‌ها ───────────────────────────────────</span>
+<span class="kw">class</span> <span class="cls">Order</span>(models.Model):
+    customer = models.<span class="fn">ForeignKey</span>(User, ...)
+    created_at = models.<span class="fn">DateTimeField</span>(auto_now_add=<span class="num">True</span>)
+
+<span class="kw">class</span> <span class="cls">OrderItem</span>(models.Model):
+    order = models.<span class="fn">ForeignKey</span>(Order, related_name=<span class="str">'items'</span>)
+    product = models.<span class="fn">ForeignKey</span>(Product, ...)
+    quantity = models.<span class="fn">IntegerField</span>()
+
+<span class="cm"># ── ❌ Serializer بد ──────────────────────────</span>
+<span class="kw">class</span> <span class="cls">OrderSerializer</span>(serializers.ModelSerializer):
+    items = <span class="cls">OrderItemSerializer</span>(many=<span class="num">True</span>)
+    customer_name = serializers.<span class="fn">CharField</span>(
+        source=<span class="str">'customer.get_full_name'</span>
+    )
+
+    <span class="kw">class</span> <span class="cls">Meta</span>:
+        model = <span class="cls">Order</span>
+        fields = <span class="str">'__all__'</span>
+
+<span class="cm"># ── ✓ Serializer بهینه ──────────────────────</span>
+<span class="kw">class</span> <span class="cls">OrderSerializer</span>(serializers.ModelSerializer):
+    items = <span class="cls">OrderItemSerializer</span>(many=<span class="num">True</span>, read_only=<span class="num">True</span>)
+    customer_name = serializers.<span class="fn">CharField</span>(
+        source=<span class="str">'customer.get_full_name'</span>,
+        read_only=<span class="num">True</span>
+    )
+    total = serializers.<span class="fn">DecimalField</span>(
+        max_digits=<span class="num">10</span>,
+        decimal_places=<span class="num">2</span>,
+        read_only=<span class="num">True</span>
+    )
+
+    <span class="kw">class</span> <span class="cls">Meta</span>:
+        model = <span class="cls">Order</span>
+        fields = [<span class="str">'id'</span>, <span class="str">'customer_name'</span>, <span class="str">'total'</span>,
+                  <span class="str">'items'</span>, <span class="str">'created_at'</span>]
+
+<span class="cm"># ── ویوی بهینه ─────────────────────────────</span>
+<span class="kw">class</span> <span class="cls">OrderViewSet</span>(viewsets.ModelViewSet):
+    serializer_class = <span class="cls">OrderSerializer</span>
+
+    <span class="kw">def</span> <span class="fn">get_queryset</span>(self):
+        <span class="kw">return</span> <span class="cls">Order</span>.objects.<span class="fn">select_related</span>(
+            <span class="str">'customer'</span>
+        ).<span class="fn">prefetch_related</span>(
+            <span class="str">'items'</span>,
+            <span class="str">'items__product'</span>
+        ).<span class="fn">annotate</span>(
+            total=<span class="fn">Sum</span>(
+                <span class="fn">F</span>(<span class="str">'items__product__price'</span>) * <span class="fn">F</span>(<span class="str">'items__quantity'</span>)
+            )
+        )</code></pre>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<!-- SECTION 15: Middleware -->
+<!-- ============================================================ -->
+<section id="sec15">
+  <div class="section-header">
+    <span class="level-indicator advanced">🔴 سطح پیشرفته</span>
+    <div class="section-number">بخش ۱۵</div>
+    <h2 class="section-title">Middleware — بهینه‌سازی لایه میانی</h2>
+    <p class="section-desc">هر middleware در هر request اجرا میشه. حتی ۱ms اضافه = ۱۰۰۰ request/s = ۱ ثانیه!</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon blue">⚙️</span>
+      Middleware بهینه
+    </div>
+    <pre><code><span class="cm"># ── ❌ Middleware بد ─────────────────────────</span>
+<span class="kw">class</span> <span class="cls">BadMiddleware</span>:
+    <span class="kw">def</span> <span class="fn">__call__</span>(self, request):
+        <span class="cm"># ❌ کوئری در هر request</span>
+        user = <span class="cls">User</span>.objects.<span class="fn">get</span>(id=request.user.id)
+        request.profile = user.profile
+
+        <span class="cm"># ❌ لاگ سنگین</span>
+        logger.<span class="fn">info</span>(f<span class="str">"Request: {request.path} "</span>
+                   f<span class="str">"User: {user.username} "</span>
+                   f<span class="str">"Time: {datetime.now()}"</span>)
+
+        response = self.get_response(request)
+        <span class="kw">return</span> response
+
+<span class="cm"># ── ✓ Middleware بهینه ──────────────────────</span>
+<span class="kw">class</span> <span class="cls">OptimizedMiddleware</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, get_response):
+        self.get_response = get_response
+
+    <span class="kw">def</span> <span class="fn">__call__</span>(self, request):
+        <span class="cm"># ✓ فقط اگه user لاگین کرده</span>
+        <span class="kw">if</span> request.user.is_authenticated:
+            <span class="cm"># ✓ select_related برای جلوگیری از N+1</span>
+            request.profile = (
+                <span class="cls">UserProfile</span>.objects
+                .<span class="fn">select_related</span>(<span class="str">'user'</span>)
+                .<span class="fn">get</span>(user=request.user)
+            )
+
+        response = self.get_response(request)
+
+        <span class="cm"># ✓ لاگ سبک — فقط path و status</span>
+        logger.<span class="fn">debug</span>(
+            <span class="str">"%s %s %d"</span>,
+            request.method,
+            request.path,
+            response.status_code
+        )
+
+        <span class="kw">return</span> response
+
+<span class="cm"># ── Middleware‌های غیرضروری رو حذف کن ─────</span>
+MIDDLEWARE = [
+    <span class="str">'django.middleware.security.SecurityMiddleware'</span>,
+    <span class="str">'django.contrib.sessions.middleware.SessionMiddleware'</span>,
+    <span class="str">'django.middleware.common.CommonMiddleware'</span>,
+    <span class="str">'django.middleware.csrf.CsrfViewMiddleware'</span>,
+    <span class="str">'django.contrib.auth.middleware.AuthenticationMiddleware'</span>,
+    <span class="cm"># ❌ اگه استفاده نمیشه حذف کن:</span>
+    <span class="cm"># 'django.contrib.messages.middleware.MessageMiddleware',</span>
+    <span class="cm"># 'django.middleware.clickjacking.XFrameOptionsMiddleware',</span>
+]</code></pre>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<!-- SECTION 16: Celery -->
+<!-- ============================================================ -->
+<section id="sec16">
+  <div class="section-header">
+    <span class="level-indicator advanced">🔴 سطح پیشرفته</span>
+    <div class="section-number">بخش ۱۶</div>
+    <h2 class="section-title">Celery — تسک‌های پس‌زمینه</h2>
+    <p class="section-desc">عملیات سنگین رو از request/response cycle خارج کن.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon orange">⚡</span>
+      جداسازی تسک‌های سنگین
+    </div>
+
+    <div class="code-compare">
+      <div class="code-block">
+        <div class="code-label bad">✗ ارسال ایمیل در request</div>
+        <pre><code><span class="cm"># ❌ کاربر ۵ ثانیه منتظر می‌مونه</span>
+<span class="kw">def</span> <span class="fn">place_order</span>(request):
+    order = create_order(request)
+    <span class="fn">send_confirmation_email</span>(order)
+    <span class="fn">update_inventory</span>(order)
+    <span class="fn">notify_warehouse</span>(order)
+    <span class="fn">generate_invoice_pdf</span>(order)
+
+    <span class="kw">return</span> <span class="fn">JsonResponse</span>({<span class="str">'ok'</span>: <span class="num">True</span>})
+    <span class="cm"># زمان: 5-10 ثانیه!</span></code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-label good">✓ تسک‌های async با Celery</div>
+        <pre><code><span class="cm"># ✓ فوری برمی‌گرده</span>
+<span class="kw">def</span> <span class="fn">place_order</span>(request):
+    order = create_order(request)
+
+    <span class="cm"># همه async اجرا میشن</span>
+    <span class="fn">send_confirmation_email</span>.<span class="fn">delay</span>(order.id)
+    <span class="fn">update_inventory</span>.<span class="fn">delay</span>(order.id)
+    <span class="fn">notify_warehouse</span>.<span class="fn">delay</span>(order.id)
+    <span class="fn">generate_invoice_pdf</span>.<span class="fn">delay</span>(order.id)
+
+    <span class="kw">return</span> <span class="fn">JsonResponse</span>({<span class="str">'ok'</span>: <span class="num">True</span>})
+    <span class="cm"># زمان: ~50ms</span></code></pre>
+      </div>
+    </div>
+
+    <pre style="margin-top:1.5rem;"><code><span class="cm"># ── tasks.py ────────────────────────────────</span>
+<span class="kw">from</span> celery <span class="kw">import</span> shared_task
+<span class="kw">from</span> celery.utils.log <span class="kw">import</span> get_task_logger
+
+logger = <span class="fn">get_task_logger</span>(__name__)
+
+<span class="dec">@shared_task</span>(
+    bind=<span class="num">True</span>,
+    max_retries=<span class="num">3</span>,
+    default_retry_delay=<span class="num">60</span>,
+    rate_limit=<span class="str">'10/m'</span>,  <span class="cm"># حداکثر 10 در دقیقه</span>
+)
+<span class="kw">def</span> <span class="fn">send_confirmation_email</span>(self, order_id):
+    <span class="kw">try</span>:
+        order = <span class="cls">Order</span>.objects.<span class="fn">select_related</span>(
+            <span class="str">'customer'</span>
+        ).<span class="fn">get</span>(id=order_id)
+        <span class="cm"># ... send email ...</span>
+    <span class="kw">except</span> <span class="cls">Exception</span> <span class="kw">as</span> exc:
+        logger.<span class="fn">error</span>(f<span class="str">"Email failed: {exc}"</span>)
+        self.<span class="fn">retry</span>(exc=exc)
+
+<span class="dec">@shared_task</span>
+<span class="kw">def</span> <span class="fn">update_inventory</span>(order_id):
+    items = <span class="cls">OrderItem</span>.objects.<span class="fn">filter</span>(
+        order_id=order_id
+    ).<span class="fn">select_related</span>(<span class="str">'product'</span>)
+
+    <span class="kw">for</span> item <span class="kw">in</span> items:
+        <span class="cls">Product</span>.objects.<span class="fn">filter</span>(
+            id=item.product_id
+        ).<span class="fn">update</span>(
+            stock=<span class="fn">F</span>(<span class="str">'stock'</span>) - item.quantity
+        )</code></pre>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<!-- SECTION 17: Monitoring -->
+<!-- ============================================================ -->
+<section id="sec17">
+  <div class="section-header">
+    <span class="level-indicator expert">🟣 سطح خبره</span>
+    <div class="section-number">بخش ۱۷</div>
+    <h2 class="section-title">Monitoring — نظارت بر عملکرد</h2>
+    <p class="section-desc">بدون اندازه‌گیری، نمی‌تونی بهینه‌سازی کنی. این ابزارها رو بشناس.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon purple">📊</span>
+      ابزارهای مانیتورینگ
+    </div>
+    <pre><code><span class="cm"># ── ① Django Debug Toolbar ──────────────────</span>
+<span class="cm"># pip install django-debug-toolbar</span>
+MIDDLEWARE += [<span class="str">'debug_toolbar.middleware.DebugToolbarMiddleware'</span>]
+INTERNAL_IPS = [<span class="str">'127.0.0.1'</span>]
+
+<span class="cm"># ── ② django-silk — پروفایلر ───────────────</span>
+<span class="cm"># pip install django-silk</span>
+MIDDLEWARE += [<span class="str">'silk.middleware.SilkyMiddleware'</span>]
+INSTALLED_APPS += [<span class="str">'silk'</span>]
+
+<span class="cm"># ── ③ Sentry — خطاهای production ───────────</span>
+<span class="kw">import</span> sentry_sdk
+<span class="kw">from</span> sentry_sdk.integrations.django <span class="kw">import</span> DjangoIntegration
+
+sentry_sdk.<span class="fn">init</span>(
+    dsn=<span class="str">"your-dsn"</span>,
+    integrations=[<span class="fn">DjangoIntegration</span>()],
+    traces_sample_rate=<span class="num">0.1</span>,  <span class="cm"># 10% performance monitoring</span>
+)
+
+<span class="cm"># ── ④ Custom Query Logger ──────────────────</span>
+<span class="kw">import</span> time
+<span class="kw">import</span> logging
+
+db_logger = logging.<span class="fn">getLogger</span>(<span class="str">'django.db.backends'</span>)
+
+<span class="kw">class</span> <span class="cls">QueryCountMiddleware</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, get_response):
+        self.get_response = get_response
+
+    <span class="kw">def</span> <span class="fn">__call__</span>(self, request):
+        from django.db <span class="kw">import</span> connection
+        connection.queries_log.<span class="fn">clear</span>()
+
+        start = time.<span class="fn">time</span>()
+        response = self.get_response(request)
+        duration = time.<span class="fn">time</span>() - start
+
+        query_count = <span class="fn">len</span>(connection.queries)
+        <span class="kw">if</span> query_count > <span class="num">20</span>:
+            db_logger.<span class="fn">warning</span>(
+                f<span class="str">"⚠️ {request.path}: {query_count} queries, "</span>
+                f<span class="str">"{duration:.2f}s"</span>
+            )
+
+        <span class="kw">return</span> response</code></pre>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<!-- SECTION 18: Security -->
+<!-- ============================================================ -->
+<section id="sec18">
+  <div class="section-header">
+    <span class="level-indicator advanced">🔴 سطح پیشرفته</span>
+    <div class="section-number">بخش ۱۸</div>
+    <h2 class="section-title">Security — امنیت و性能 دست به دست</h2>
+    <p class="section-desc">تنظیمات امنیتی هم روی performance تأثیر دارن. بهینه‌سازی هوشمندانه.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="icon red">🔒</span>
+      تنظیمات Production
+    </div>
+    <pre><code><span class="cm"># ── settings/production.py ──────────────────</span>
+
+<span class="cm"># Security</span>
+DEBUG = <span class="num">False</span>
+SECRET_KEY = os.environ[<span class="str">'DJANGO_SECRET_KEY'</span>]
+ALLOWED_HOSTS = os.environ.<span class="fn">get</span>(<span class="str">'ALLOWED_HOSTS'</span>, <span class="str">''</span>).<span class="fn">split</span>(<span class="str">','</span>)
+
+<span class="cm"># HTTPS</span>
+SECURE_SSL_REDIRECT = <span class="num">True</span>
+SECURE_HSTS_SECONDS = <span class="num">31536000</span>
+SECURE_HSTS_INCLUDE_SUBDOMAINS = <span class="num">True</span>
+SECURE_HSTS_PRELOAD = <span class="num">True</span>
+SESSION_COOKIE_SECURE = <span class="num">True</span>
+CSRF_COOKIE_SECURE = <span class="num">True</span>
+
+<span class="cm"># Static Files — WhiteNoise</span>
+MIDDLEWARE.insert(<span class="num">1</span>, <span class="str">'whitenoise.middleware.WhiteNoiseMiddleware'</span>)
+STATICFILES_STORAGE = <span class="str">'whitenoise.storage.CompressedManifestStaticFilesStorage'</span>
+
+<span class="cm"># ── بهینه‌سازی‌های Production ────────────────</span>
+
+<span class="cm"># Template caching</span>
+TEMPLATES[<span class="num">0</span>][<span class="str">'OPTIONS'</span>][<span class="str">'loaders'</span>] = [
+    (<span class="str">'django.template.loaders.cached.Loader'</span>, [
+        <span class="str">'django.template.loaders.filesystem.Loader'</span>,
+        <span class="str">'django.template.loaders.app_directories.Loader'</span>,
+    ]),
+]
+
+<span class="cm"># Static file caching headers</span>
+WHITENOISE_MAX_AGE = <span class="num">31536000</span>  <span class="cm"># 1 سال</span>
+
+<span class="cm"># Compression</span>
+MIDDLEWARE.insert(<span class="num">2</span>, <span class="str">'django.middleware.gzip.GZipMiddleware'</span>)</code></pre>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============================================================ -->
+<!-- CHECKLIST -->
+<!-- ============================================================ -->
+<section>
+  <div class="section-header">
+    <div class="section-number">چک‌لیست نهایی</div>
+    <h2 class="section-title">چک‌لیست بهینه‌سازی Production</h2>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">
+        <span class="icon green">✅</span>
+        Database
+      </div>
+      <ul class="check-list">
+        <li>select_related و prefetch_related همه‌جا</li>
+        <li>only/defer برای فیلدهای سنگین</li>
+        <li>annotate به جای حلقه Python</li>
+        <li>bulk_create/bulk_update به جای save تکی</li>
+        <li>Index روی فیلدهای filter/order_by</li>
+        <li>EXPLAIN ANALYZE روی کوئری‌های کند</li>
+        <li>Connection pooling فعال</li>
+        <li>WAL Mode (SQLite) / tuned config (PostgreSQL)</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span class="icon blue">✅</span>
+        Application
+      </div>
+      <ul class="check-list">
+        <li>Redis cache فعال و نسخه‌بندی شده</li>
+        <li>Async views برای I/O-bound</li>
+        <li>Celery برای تسک‌های سنگین</li>
+        <li>Serializer با prefetch_related</li>
+        <li>Middleware‌های غیرضروری حذف شده</li>
+        <li>Template caching فعال</li>
+        <li>Static files با WhiteNoise + compression</li>
+        <li>Monitoring (Debug Toolbar / Silk / Sentry)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  <p>Django Optimization Bible — ساخته شده با <span class="heart">❤</span></p>
+  <p style="margin-top:0.5rem;font-size:0.75rem;">نسخه ۱.۰ — ۲۰۲۶</p>
+</footer>
+
+</body>
+</html>
